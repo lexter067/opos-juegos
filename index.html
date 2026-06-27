@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F4E79">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Juegos Opos · Técnico de Hacienda</title>
+<style>
+:root{--azul:#1F4E79;--azul2:#2e6da4;--ok:#2e744f;--ko:#b3261e;--amb:#9a6700;--bg:#eef1f5;--card:#fff;--mut:#5a6b7b;}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:#1c2530;line-height:1.45}
+.wrap{max-width:820px;margin:0 auto;padding:16px}
+h1{color:var(--azul);font-size:21px;margin:4px 0}
+h2{color:var(--azul);font-size:15px;margin:18px 0 8px;border-bottom:2px solid #dce3ea;padding-bottom:4px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.tile{background:var(--card);border:1px solid #dce3ea;border-radius:12px;padding:13px 14px;cursor:pointer;transition:.12s;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.tile:hover{border-color:var(--azul2);transform:translateY(-1px)}
+.tile .t{font-weight:600;color:var(--azul);font-size:15px}
+.tile .d{font-size:12.5px;color:var(--mut);margin-top:3px}
+.tile .n{font-size:11px;color:#8a99a8;margin-top:6px}
+.card{background:var(--card);border:1px solid #dce3ea;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
+.btn{background:var(--azul);color:#fff;border:none;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{background:#163a5c}.btn.sec{background:#e7edf3;color:var(--azul)}.btn.sm{padding:6px 11px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.chip{display:inline-block;border:1.5px solid var(--azul);color:var(--azul);background:#fff;border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;margin:3px}
+.chip.on{background:var(--azul);color:#fff}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.opt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid #d6dde6;border-radius:10px;padding:11px 13px;margin:7px 0;cursor:pointer;font-size:14.5px}
+.opt:hover{border-color:var(--azul2)}.opt .k{display:inline-block;width:23px;height:23px;line-height:23px;text-align:center;border-radius:6px;background:#eef2f7;color:var(--azul);font-weight:700;margin-right:8px}
+.opt.ok{border-color:var(--ok);background:#eaf6ef}.opt.ko{border-color:var(--ko);background:#fbecea}.opt.selL{border-color:var(--azul);background:#e6eef7}
+.opt.ok .k{background:var(--ok);color:#fff}.opt.ko .k{background:var(--ko);color:#fff}
+.badge{display:inline-block;background:#eef2f7;color:var(--azul);border-radius:6px;padding:2px 9px;font-size:12px;font-weight:600}
+.q{font-size:16.5px;font-weight:600;margin:8px 0 10px}
+.just{background:#f7f9fc;border-left:4px solid var(--azul);padding:9px 12px;border-radius:5px;font-size:13.5px;color:#33414f;margin-top:9px}
+.stat{display:flex;gap:14px;font-size:13px;color:#33414f;flex-wrap:wrap}.stat b{color:var(--azul)}
+.bar{height:7px;background:#e0e6ec;border-radius:6px;overflow:hidden;margin:8px 0}.bar>i{display:block;height:100%;background:var(--azul);width:0;transition:.2s}
+.big{font-size:38px;font-weight:800;color:var(--azul)}.center{text-align:center}
+input[type=text],textarea,select{font-size:15px;font-family:inherit;border:1.5px solid #ccd5de;border-radius:8px;padding:7px 9px}
+textarea{width:100%;min-height:120px}
+.gap{display:inline-block;border:none;border-bottom:2px solid var(--azul);background:#f3f7fb;min-width:60px;text-align:center;border-radius:4px 4px 0 0;margin:0 2px}
+.gap.ok{background:#eaf6ef;border-color:var(--ok)}.gap.ko{background:#fbecea;border-color:var(--ko)}
+.word{cursor:pointer;padding:1px 2px;border-radius:4px}.word.sel{background:#ffe9a8}.word.bad{background:#fbecea;color:var(--ko);font-weight:700}.word.good{background:#eaf6ef;color:var(--ok);font-weight:700}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;color:var(--azul)}
+.timer.warn{color:var(--ko)}
+.muted{color:var(--mut);font-size:13px}
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.zone{border:1.5px dashed #c3cdd8;border-radius:10px;padding:10px;text-align:center}
+ul.chk{list-style:none;padding:0}ul.chk li{padding:6px 8px;border-bottom:1px solid #eef2f6;cursor:pointer;font-size:14px}ul.chk li:before{content:'⬜ ';}ul.chk li.on:before{content:'✅ ';}
+a.lnk{color:var(--azul);cursor:pointer;text-decoration:underline;font-size:13px}
+.lectura{font-size:15px;line-height:1.6}.lectura h4{color:var(--azul);font-size:15px;margin:14px 0 4px}.lectura p{margin:6px 0}.lectura p.h5{font-weight:600;margin:8px 0 2px}.lectura ul{margin:6px 0 6px 4px;padding-left:18px}.lectura li{margin:3px 0}.lectura table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13.5px}.lectura td{border:1px solid #d6dde6;padding:5px 7px;vertical-align:top}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="between">
+    <h1 id="title">🎮 Juegos Opos · Técnico de Hacienda</h1>
+    <button class="btn sec sm" id="home" style="display:none">← Menú</button>
+  </div>
+  <div id="app"></div>
+  <div class="sub center" style="margin-top:18px">Todo offline · generado de tu material de estudio. El banco de errores y la repetición espaciada se guardan en este navegador.</div>
+</div>
+<script src="datos.js"></script>
+<script src="contenido.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const D = window.DATOS, BLOCKS = D.meta.blocks, EXAM1 = D.meta.exam1;
+const $ = s=>document.querySelector(s), app=$('#app');
+const el=(t,c,html)=>{const e=document.createElement(t);if(c)e.className=c;if(html!=null)e.innerHTML=html;return e;};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const byB=(arr,set)=>arr.filter(x=>set.has(x.b));
+const norm=s=>(s||'').toString().toLowerCase().replace(/\s+/g,'').replace(/[.,;]+$/,'').replace('%','').trim();
+const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem('thac_'+k))??d}catch(e){return d}},set:(k,v)=>localStorage.setItem('thac_'+k,JSON.stringify(v))};
+$('#home').onclick=showHome;
+function setTitle(t){$('#title').textContent=t;$('#home').style.display=t.includes('Juegos Opos')?'none':'inline-block';}
+
+/* ---------- BANCO DE ERRORES ---------- */
+function banco(){return LS.get('banco',[])}
+function addErr(item){const b=banco();const key=item.kind+'|'+item.b+'|'+(item.q||item.contenido||item.titulo||'').slice(0,60);if(!b.find(x=>x.key===key)){b.push({key,...item});LS.set('banco',b);}}
+function delErr(key){LS.set('banco',banco().filter(x=>x.key!==key))}
+/* ---------- ESTADÍSTICAS por tema + racha ---------- */
+function recordStat(b,t,ok){const s=LS.get('stats',{});const k=b+'|'+(t||'?');s[k]=s[k]||{g:0,n:0};s[k].n++;if(ok)s[k].g++;LS.set('stats',s);touchStreak();}
+function touchStreak(){const today=new Date().toISOString().slice(0,10);const st=LS.get('streak',{last:'',count:0});if(st.last===today)return;const y=new Date(Date.now()-86400000).toISOString().slice(0,10);st.count=(st.last===y)?(st.count||0)+1:1;st.last=today;LS.set('streak',st);}
+
+/* ---------- HOME ---------- */
+function tile(t,d,n,fn){const e=el('div','tile');e.innerHTML=`<div class="t">${t}</div><div class="d">${d}</div>${n?`<div class="n">${n}</div>`:''}`;e.onclick=fn;return e;}
+function section(title){const h=el('h2',null,title);app.appendChild(h);const g=el('div','grid');app.appendChild(g);return g;}
+function showHome(){
+  setTitle('🎮 Juegos Opos · Técnico de Hacienda');app.innerHTML='';
+  let g=section('⭐ Empieza aquí');
+  g.appendChild(tile('🔥 Repaso del día','Sesión mixta: tus errores + preguntas nuevas. Hazla cada día para mantener la racha',null,()=>repasoDia()));
+  g.appendChild(tile('📚 Temari (estudiar)','Lee cada tema en texto completo y practica al terminar',(window.CONTENIDO||[]).length+' temas',()=>showTemario()));
+  g=section('🏆 Competición con Judith');
+  g.appendChild(tile('🔥 Reto diario','Mismas preguntas para los dos hoy; sube tu nota y compite',null,()=>retoDiario()));
+  g.appendChild(tile('🏆 Clasificación','Ranking de hoy / semana / total'+(onlineReady()?'':' (configura Firebase)'),null,()=>showLeaderboard()));
+  g=section('📝 Examen 1 · Test (Civil, Mercantil, Economía, Administrativo)');
+  g.appendChild(tile('Simulacro AEAT','Test con penalización por error, cronómetro e informe por bloques','Réplica del examen real',()=>cfgTest({exam:'aeat'})));
+  g.appendChild(tile('Test por bloque/tema','Práctica libre, corrección al instante con justificación',D.test.length+' preguntas',()=>cfgTest({exam:'libre'})));
+  g=section('📒 Examen 2 · Contabilidad (práctico)');
+  g.appendChild(tile('Test de Contabilidad','Conceptos, cuentas y reglas en formato test',byB(D.test,new Set(['Contabilidad'])).length+' preguntas',()=>runQuiz(shuffle(byB(D.test,new Set(['Contabilidad']))).slice(0,25),{})));
+  g.appendChild(tile('Flashcards Contabilidad','Repaso rápido de cuentas y conceptos',null,()=>startSRS(new Set(['Contabilidad']))));
+  g.appendChild(tile('⚠ Práctica de asientos','Lo decisivo del 2.º ejercicio se entrena con los Ejercicios y los 25 supuestos oficiales (carpeta Contabilidad)','Material externo',()=>alert('La práctica de asientos está en Estudio/Contabilidad: Contabilidad_Ejercicios y Contabilidad_Examenes_Oficiales (25 supuestos resueltos). Este juego cubre los conceptos en test/flashcards.')));
+  g=section('🎓 Examen 3 · Preguntas de todo + Desarrollo');
+  g.appendChild(tile('Pregunta de TODO','Mezcla preguntas de los 6 bloques',D.test.length+' preguntas',()=>runQuiz(shuffle(D.test).slice(0,30),{})));
+  g.appendChild(tile('Explica un tema','Desarrolla un tema y autoevalúa con su guión de epígrafes',D.temas.length+' temas',()=>cfgDesarrollo()));
+  g.appendChild(tile('Casos prácticos','Mini-supuestos tipo test (aplicar, no solo memorizar)',D.test.filter(q=>CASO_RE.test(q.q)).length+' casos',()=>startCasos()));
+  g=section('🧠 Memorización de datos duros');
+  g.appendChild(tile('Cloze de cifras y plazos','Rellena números, plazos y porcentajes de memoria',D.cloze.filter(c=>c.kind==='cifras').length+' frases',()=>cfgCloze('cifras')));
+  g.appendChild(tile('Cloze legal','Rellena artículos, leyes y datos clave',D.cloze.filter(c=>c.kind==='legal').length+' frases',()=>cfgCloze('legal')));
+  g.appendChild(tile('Flashcards SRS','Repetición espaciada (Leitner) según tus errores',D.flashcards.length+' tarjetas',()=>cfgSRS()));
+  g.appendChild(tile('¿Qué artículo/ley es?','Te dan el contenido, identificas la norma',D.articulo.length+' ítems',()=>cfgArticulo()));
+  g.appendChild(tile('Mapa mental','Desbloquea los epígrafes de un tema acertando preguntas',D.temas.length+' temas',()=>cfgMapa()));
+  g=section('🔍 Comprensión y aplicación');
+  g.appendChild(tile('Detección de errores','Encuentra los datos alterados contra reloj',D.errores.length+' párrafos',()=>cfgErrores()));
+  g.appendChild(tile('Comparación rápida','Asigna cada característica a la figura correcta',D.comparacion.length+' cuadros',()=>cfgComp()));
+  g.appendChild(tile('Ordenar / reconstruir','Coloca pasos y enumeraciones en su orden',D.procedimientos.length+' enumeraciones',()=>cfgOrden()));
+  g.appendChild(tile('Dictado conceptual','Lee una definición, tápala y reescríbela',D.definiciones.length+' definiciones',()=>cfgDictado()));
+  g=section('🎲 Más juegos');
+  g.appendChild(tile('💀 Supervivencia','Encadena aciertos con 3 vidas. ¿Hasta dónde llegas?',null,()=>startSurvival()));
+  g.appendChild(tile('🔗 Emparejar','Une enunciado y respuesta a contrarreloj',null,()=>startMatch()));
+  g.appendChild(tile('⚖ Verdadero / Falso','¿La respuesta propuesta encaja con la pregunta?',null,()=>startVF()));
+  g.appendChild(tile('📊 Tabla completa','Clasifica todos los rasgos de un cuadro comparativo',D.comparacion.length+' cuadros',()=>startTabla()));
+  g.appendChild(tile('⚔ Boss del bloque','Examen difícil; gana la medalla del bloque (8/10)',null,()=>cfgBoss()));
+  g=section('📊 Mi progreso');
+  g.appendChild(tile('Banco de errores','Repasa lo que has fallado (prioritario)',banco().length+' guardados',()=>showBanco()));
+  g.appendChild(tile('Estadísticas / reiniciar','Ver tu progreso o borrar datos guardados',null,()=>showStats()));
+}
+
+/* ---------- helpers de configuración ---------- */
+function blockChooser(initial){
+  const box=el('div');box.innerHTML='<div class="sub">Bloques:</div>';const wrap=el('div');
+  const sel=new Set(initial||BLOCKS);
+  BLOCKS.forEach(b=>{const c=el('span','chip'+(sel.has(b)?' on':''),b);c.onclick=()=>{c.classList.toggle('on');c.classList.contains('on')?sel.add(b):sel.delete(b);};wrap.appendChild(c);});
+  box.appendChild(wrap);box._sel=sel;return box;
+}
+
+/* ---------- MOTOR QUIZ ---------- */
+function cfgTest(o){
+  setTitle(o.exam==='aeat'?'Simulacro AEAT':'Test por bloque/tema');app.innerHTML='';
+  const c=el('div','card');
+  const bc=blockChooser(o.exam==='aeat'?EXAM1:BLOCKS);c.appendChild(bc);
+  c.insertAdjacentHTML('beforeend','<div class="sub" style="margin-top:10px">Nº de preguntas:</div>');
+  const selN=el('select');[10,25,50,75,100].forEach(n=>selN.add(new Option(n,n)));selN.value=o.exam==='aeat'?'50':'25';c.appendChild(selN);
+  if(o.exam==='aeat'){c.insertAdjacentHTML('beforeend','<div class="sub" style="margin-top:10px">Tiempo (min):</div>');var selT=el('select');[15,30,45,60,90].forEach(n=>selT.add(new Option(n,n)));selT.value='45';c.appendChild(selT);}
+  c.appendChild(el('div',null,'<br>'));
+  const go=el('button','btn','▶ Empezar');c.appendChild(go);
+  go.onclick=()=>{const pool=shuffle(byB(D.test,bc._sel));if(!pool.length)return alert('Elige algún bloque.');
+    runQuiz(pool.slice(0,+selN.value),{penaliza:o.exam==='aeat',timeLimit:o.exam==='aeat'?+selT.value*60:0,porBloque:o.exam==='aeat'});};
+  app.appendChild(c);
+}
+function runQuiz(qs,opt){
+  if(!qs.length)return alert('No hay preguntas.');
+  setTitle(opt.penaliza?'Simulacro AEAT':'Test');app.innerHTML='';
+  let i=0,good=0,bad=0,blank=0,streak=0,answered=false,remain=opt.timeLimit||0,timer=null;
+  const perB={};
+  const c=el('div','card');app.appendChild(c);
+  const head=el('div','between');c.appendChild(head);
+  const bar=el('div','bar');bar.innerHTML='<i></i>';c.appendChild(bar);
+  const body=el('div');c.appendChild(body);
+  if(opt.timeLimit){timer=setInterval(()=>{remain--;draw();if(remain<=0){clearInterval(timer);finish();}},1000);}
+  function draw(){
+    const q=qs[i];
+    head.innerHTML=`<div class="stat"><span>Pregunta <b>${i+1}</b>/${qs.length}</span><span>✅ <b>${good}</b></span><span>❌ <b>${bad}</b></span>${opt.penaliza?`<span>Nota <b>${score().toFixed(2)}</b></span>`:`<span>🔥<b>${streak}</b></span>`}</div>`+
+      (opt.timeLimit?`<span class="timer ${remain<60?'warn':''}">${fmt(Math.max(0,remain))}</span>`:'');
+    bar.firstChild.style.width=(i/qs.length*100)+'%';
+  }
+  function render(){
+    answered=false;const q=qs[i];draw();body.innerHTML='';
+    const brow=el('div','between');brow.appendChild(el('span','badge',`${q.b} · Tema ${q.t}`));
+    const sp=el('button','btn sec sm','🔊');sp.title='Leer';sp.onclick=()=>speak(q.q+'. '+q.op.map((o,k)=>'ABCD'[k]+': '+o).join('. '));brow.appendChild(sp);body.appendChild(brow);
+    body.appendChild(el('div','q',q.q));
+    q.op.forEach((o,idx)=>{const b=el('button','opt',`<span class="k">${'ABCD'[idx]}</span>${o}`);b.onclick=()=>choose(idx,b);body.appendChild(b);});
+    const nav=el('div','between');nav.style.marginTop='10px';
+    const skip=el('button','btn sec sm','Saltar (en blanco) →');skip.onclick=()=>{blank++;next();};
+    const nx=el('button','btn sm','Siguiente →');nx.style.display='none';nx.id='nx';
+    nav.appendChild(skip);nav.appendChild(nx);body.appendChild(nav);
+  }
+  function choose(idx,btn){
+    if(answered)return;answered=true;const q=qs[i];
+    perB[q.b]=perB[q.b]||{g:0,t:0};perB[q.b].t++;
+    [...body.querySelectorAll('.opt')].forEach((b,k)=>{b.disabled=true;if(k===q.ok)b.classList.add('ok');});
+    if(idx===q.ok){good++;streak++;perB[q.b].g++;}
+    else{bad++;streak=0;btn.classList.add('ko');addErr({kind:'test',b:q.b,q:q.q,op:q.op,ok:q.ok,just:q.just,t:q.t});}
+    recordStat(q.b,q.t,idx===q.ok);
+    if(q.just)body.appendChild(el('div','just',q.just));
+    const nx=$('#nx');nx.style.display='inline-block';nx.onclick=next;nx.focus();draw();
+  }
+  function next(){i++;if(i>=qs.length)finish();else render();}
+  function score(){const p=good-(opt.penaliza?bad/3:0);return Math.max(0,p/qs.length*10);}
+  function finish(){
+    if(timer)clearInterval(timer);setTitle('Resultado');app.innerHTML='';
+    const r=el('div','card center');
+    const nota=score();
+    r.innerHTML=`<div class="big">${nota.toFixed(2)} / 10</div><div class="muted">${good} aciertos · ${bad} fallos · ${blank} en blanco${opt.penaliza?' · (penalización −1/3 por fallo)':''}</div>`;
+    if(opt.porBloque){let t='<table style="width:100%;margin-top:14px;font-size:14px"><tr><th align=left>Bloque</th><th>Aciertos</th><th>%</th></tr>';
+      Object.keys(perB).forEach(b=>{const x=perB[b];t+=`<tr><td>${b}</td><td align=center>${x.g}/${x.t}</td><td align=center>${Math.round(x.g/x.t*100)}%</td></tr>`;});t+='</table>';r.insertAdjacentHTML('beforeend',t);}
+    if(opt.onEnd){const extra=opt.onEnd(nota,good,bad,qs.length);if(extra)r.insertAdjacentHTML('beforeend',extra);}
+    const again=el('button','btn','↻ Otra vez');again.onclick=showHome;r.appendChild(el('div',null,'<br>'));r.appendChild(again);
+    app.appendChild(r);
+  }
+  render();
+}
+
+/* ---------- SRS (Leitner) ---------- */
+const SRS_INT=[0,1,3,7,16,30]; // días por caja 1..5
+function cfgSRS(){setTitle('Flashcards SRS');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);
+  c.insertAdjacentHTML('beforeend','<div class="sub" style="margin-top:10px">Tarjetas nuevas por sesión:</div>');const s=el('select');[10,20,30,50].forEach(n=>s.add(new Option(n,n)));s.value='20';c.appendChild(s);
+  c.appendChild(el('div',null,'<br>'));const go=el('button','btn','▶ Empezar');go.onclick=()=>startSRS(bc._sel,+s.value);c.appendChild(go);app.appendChild(c);}
+function startSRS(set,nNew){
+  nNew=nNew||20;setTitle('Flashcards SRS');app.innerHTML='';
+  const srs=LS.get('srs',{}),now=Date.now();
+  const pool=byB(D.flashcards,set);
+  const due=[],fresh=[];
+  pool.forEach(c=>{const id=c.b+'|'+c.q;const s=srs[id];if(s){if(s.due<=now)due.push(c);}else fresh.push(c);});
+  let queue=shuffle(due).concat(shuffle(fresh).slice(0,nNew));
+  if(!queue.length)return showInfo('¡Sin tarjetas pendientes!','No hay tarjetas vencidas ni nuevas en esos bloques. Vuelve más tarde o elige otros bloques.');
+  queue=shuffle(queue);let i=0,good=0,bad=0;
+  const c=el('div','card');app.appendChild(c);
+  function show(){
+    const card=queue[i];c.innerHTML='';
+    c.appendChild(el('div','between',`<div class="stat"><span><b>${i+1}</b>/${queue.length}</span><span>✅ <b>${good}</b></span><span>❌ <b>${bad}</b></span></div><span class="badge">${card.b} · T${card.t}</span>`));
+    c.appendChild(el('div','q',card.q));
+    const rev=el('div','just');rev.style.display='none';rev.textContent=card.a;c.appendChild(rev);
+    const showBtn=el('button','btn','Mostrar respuesta');
+    const rate=el('div','row');rate.style.display='none';
+    const ksi=el('button','btn','✅ La sabía'),kno=el('button','btn sec','❌ Fallé');kno.style.background='#fbecea';kno.style.color='#b3261e';
+    rate.appendChild(ksi);rate.appendChild(kno);
+    showBtn.onclick=()=>{rev.style.display='block';showBtn.style.display='none';rate.style.display='flex';};
+    ksi.onclick=()=>grade(card,true);kno.onclick=()=>grade(card,false);
+    c.appendChild(showBtn);c.appendChild(rate);
+  }
+  function grade(card,ok){
+    const srs=LS.get('srs',{});const id=card.b+'|'+card.q;const box=ok?Math.min(5,((srs[id]&&srs[id].box)||0)+1):1;
+    srs[id]={box,due:Date.now()+SRS_INT[box]*86400000};LS.set('srs',srs);
+    if(ok)good++;else{bad++;addErr({kind:'fc',b:card.b,q:card.q,a:card.a,t:card.t});}
+    i++;if(i>=queue.length)return showInfo('Sesión completa',`${good} sabidas · ${bad} falladas. Las falladas vuelven pronto (caja 1). Las acertadas se espacian.`);
+    show();
+  }
+  show();
+}
+
+/* ---------- CLOZE ---------- */
+function cfgCloze(kind){setTitle(kind==='cifras'?'Cloze de cifras y plazos':'Cloze legal');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);
+  const lab=el('label','muted');lab.style.display='block';lab.style.margin='12px 0';lab.innerHTML='<input type="checkbox" id="estudia"> Estudiar primero el párrafo y luego taparlo';
+  const ssel=el('select');[10,15,20,30].forEach(n=>ssel.add(new Option(n+' s',n)));ssel.value='15';ssel.style.marginLeft='8px';lab.appendChild(ssel);c.appendChild(lab);
+  const go=el('button','btn','▶ Empezar');go.onclick=()=>{const pool=shuffle(D.cloze.filter(x=>x.kind===kind&&bc._sel.has(x.b))).slice(0,20);runCloze(pool,$('#estudia').checked?+ssel.value:0);};c.appendChild(go);app.appendChild(c);}
+function runCloze(pool,studySecs){
+  if(!pool.length)return alert('No hay frases para esos bloques.');
+  setTitle('Cloze');app.innerHTML='';let i=0,good=0,bad=0;const c=el('div','card');app.appendChild(c);
+  const head=()=>`<div class="stat"><span><b>${i+1}</b>/${pool.length}</span><span>✅ <b>${good}</b></span><span>❌ <b>${bad}</b></span></div><span class="badge">${pool[i].b} · T${pool[i].t}</span>`;
+  function full(it){let k=0;return it.text.replace(/\{\}/g,()=>'<b style="color:#1F4E79">'+it.answers[k++]+'</b>');}
+  function study(){const it=pool[i];c.innerHTML='';c.appendChild(el('div','between',head()));c.appendChild(el('div','muted','Memoriza los datos resaltados:'));c.appendChild(el('div','q',full(it)));
+    let r=studySecs;const tm=el('div','timer');tm.textContent=r+' s';c.appendChild(tm);const iv=setInterval(()=>{r--;tm.textContent=r+' s';if(r<=0){clearInterval(iv);show();}},1000);
+    const sk=el('button','btn sec sm','Tapar ya');sk.style.marginLeft='8px';sk.onclick=()=>{clearInterval(iv);show();};c.appendChild(sk);}
+  function show(){
+    const it=pool[i];c.innerHTML='';c.appendChild(el('div','between',head()));
+    const frag=it.text.split('{}').reduce((acc,part,idx)=>acc+part+(idx<it.answers.length?`<input type="text" class="gap" id="g${idx}" placeholder="${(it.hints&&it.hints[idx])||''}" autocomplete="off">`:''),'');
+    c.appendChild(el('div','q',frag));
+    const chk=el('button','btn','Comprobar');const nx=el('button','btn sm','Siguiente →');nx.style.display='none';nx.style.marginLeft='8px';
+    chk.onclick=()=>{let allok=true;it.answers.forEach((a,idx)=>{const inp=$('#g'+idx);const okk=norm(inp.value)===norm(a);inp.classList.add(okk?'ok':'ko');inp.disabled=true;if(!okk){allok=false;inp.value=(inp.value?inp.value+' → ':'')+a;}});
+      if(allok)good++;else{bad++;addErr({kind:'cloze',b:it.b,q:it.text,a:it.answers.join(' / ')});}
+      recordStat(it.b,it.t,allok);chk.style.display='none';nx.style.display='inline-block';};
+    nx.onclick=()=>{i++;if(i>=pool.length)return showInfo('Cloze completo',`${good} aciertos de ${pool.length}.`);start();};
+    const row=el('div','row');row.style.marginTop='10px';row.appendChild(chk);row.appendChild(nx);c.appendChild(row);
+    setTimeout(()=>{const f=$('#g0');if(f)f.focus();},50);
+  }
+  function start(){studySecs>0?study():show();}
+  start();
+}
+
+/* ---------- ¿QUÉ ARTÍCULO? ---------- */
+function cfgArticulo(){setTitle('¿Qué artículo/ley es?');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);c.appendChild(el('div',null,'<br>'));
+  const go=el('button','btn','▶ Empezar');go.onclick=()=>{const pool=shuffle(byB(D.articulo,bc._sel)).slice(0,20);runArticulo(pool);};c.appendChild(go);app.appendChild(c);}
+function runArticulo(pool){
+  if(!pool.length)return alert('Sin ítems.');setTitle('¿Qué artículo/ley es?');app.innerHTML='';let i=0,good=0,bad=0;const c=el('div','card');app.appendChild(c);
+  function show(){const it=pool[i];c.innerHTML='';
+    c.appendChild(el('div','between',`<div class="stat"><span><b>${i+1}</b>/${pool.length}</span><span>✅ <b>${good}</b></span><span>❌ <b>${bad}</b></span></div><span class="badge">${it.b}</span>`));
+    c.appendChild(el('div','q','¿Qué norma/artículo regula esto?<br><span style="font-weight:400">'+it.contenido+'</span>'));
+    const rev=el('div','just');rev.style.display='none';rev.textContent='Respuesta: '+it.respuesta;c.appendChild(rev);
+    const sb=el('button','btn','Mostrar');const rate=el('div','row');rate.style.display='none';
+    const ok=el('button','btn','✅ Acerté'),no=el('button','btn sec','❌ Fallé');no.style.background='#fbecea';no.style.color='#b3261e';rate.appendChild(ok);rate.appendChild(no);
+    sb.onclick=()=>{rev.style.display='block';sb.style.display='none';rate.style.display='flex';};
+    ok.onclick=()=>nextA(true);no.onclick=()=>{addErr({kind:'art',b:it.b,contenido:it.contenido,a:it.respuesta});nextA(false);};
+    c.appendChild(sb);c.appendChild(rate);
+  }
+  function nextA(g){g?good++:bad++;i++;if(i>=pool.length)return showInfo('Completo',`${good} de ${pool.length}.`);show();}
+  show();
+}
+
+/* ---------- DETECCIÓN DE ERRORES ---------- */
+function cfgErrores(){setTitle('Detección de errores');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);c.appendChild(el('div',null,'<br>'));
+  const go=el('button','btn','▶ Empezar');go.onclick=()=>{const pool=shuffle(byB(D.errores,bc._sel)).slice(0,15);runErrores(pool);};c.appendChild(go);app.appendChild(c);}
+function runErrores(pool){
+  if(!pool.length)return alert('Sin párrafos.');setTitle('Detección de errores');app.innerHTML='';let i=0,good=0;const c=el('div','card');app.appendChild(c);
+  function show(){const it=pool[i];c.innerHTML='';const sel=new Set();let checked=false;
+    c.appendChild(el('div','between',`<div class="stat"><span><b>${i+1}</b>/${pool.length}</span><span>Aciertos <b>${good}</b></span></div><span class="badge">${it.b} · T${it.t}</span>`));
+    c.appendChild(el('div','muted',`Hay <b>${it.nbad}</b> dato(s) alterado(s) entre los números resaltados. Toca los que creas erróneos.`));
+    const p=el('div','q');p.style.fontWeight='400';const cands=[];
+    it.segs.forEach((s,idx)=>{
+      if(s.cand){const sp=el('span','word',s.w);sp.style.borderBottom='2px solid #c9d3dd';sp.dataset.i=idx;
+        sp.onclick=()=>{if(checked)return;sp.classList.toggle('sel');sel.has(idx)?sel.delete(idx):sel.add(idx);};p.appendChild(sp);cands.push(sp);}
+      else p.appendChild(document.createTextNode(s.txt));
+    });
+    c.appendChild(p);
+    const chk=el('button','btn','Comprobar');const nx=el('button','btn sm','Siguiente →');nx.style.display='none';nx.style.marginLeft='8px';
+    chk.onclick=()=>{checked=true;let hit=0,fp=0;cands.forEach(sp=>{const seg=it.segs[+sp.dataset.i];sp.classList.remove('sel');
+        if(seg.bad){if(sel.has(+sp.dataset.i)){sp.classList.add('good');hit++;}else{sp.classList.add('bad');sp.textContent=sp.textContent+' (✓ '+seg.ok+')';}}
+        else if(sel.has(+sp.dataset.i)){sp.style.background='#fff3cd';fp++;}});
+      const perfect=(hit===it.nbad&&fp===0);if(perfect)good++;else addErr({kind:'err',b:it.b,q:it.segs.map(s=>s.cand?(s.bad?'['+s.ok+']':s.w):s.txt).join(''),a:'alterados: '+it.segs.filter(s=>s.bad).map(s=>s.ok).join(', ')});
+      recordStat(it.b,it.t,perfect);chk.style.display='none';nx.style.display='inline-block';};
+    nx.onclick=()=>{i++;if(i>=pool.length)return showInfo('Completo',`${good} párrafos perfectos de ${pool.length}.`);show();};
+    const row=el('div','row');row.style.marginTop='10px';row.appendChild(chk);row.appendChild(nx);c.appendChild(row);
+  }
+  show();
+}
+
+/* ---------- COMPARACIÓN RÁPIDA ---------- */
+function cfgComp(){setTitle('Comparación rápida');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);c.appendChild(el('div',null,'<br>'));
+  const go=el('button','btn','▶ Empezar');go.onclick=()=>{const pool=shuffle(byB(D.comparacion,bc._sel));if(!pool.length)return alert('Sin cuadros.');runComp(pool[0]);};c.appendChild(go);app.appendChild(c);}
+function runComp(cuadro){
+  setTitle('Comparación rápida');app.innerHTML='';const items=shuffle(cuadro.items);let i=0,good=0;const c=el('div','card');app.appendChild(c);
+  function show(){const it=items[i];c.innerHTML='';
+    c.appendChild(el('div','badge',cuadro.b));c.appendChild(el('div','q',cuadro.titulo));
+    c.appendChild(el('div','muted',(it.attr?('<b>'+it.attr+'</b> · '):'')+'¿A cuál corresponde?'));
+    c.appendChild(el('div','q','«'+it.texto+'»'));
+    const row=el('div','col2');const A=el('button','btn sec',cuadro.A),B=el('button','btn sec',cuadro.B);row.appendChild(A);row.appendChild(B);c.appendChild(row);
+    const fb=el('div');c.appendChild(fb);
+    function pick(side,btn){const ok=side===it.lado;btn.style.background=ok?'#eaf6ef':'#fbecea';
+      fb.innerHTML=`<div class="just">${ok?'✅ Correcto':'❌ Era '+(it.lado==='A'?cuadro.A:cuadro.B)}</div>`;if(ok)good++;A.disabled=B.disabled=true;
+      const nx=el('button','btn sm','Siguiente →');nx.style.marginTop='8px';nx.onclick=()=>{i++;if(i>=items.length)return showInfo('Cuadro completo',`${good} de ${items.length} en «${cuadro.titulo}».`);show();};fb.appendChild(nx);}
+    A.onclick=()=>pick('A',A);B.onclick=()=>pick('B',B);
+    c.appendChild(el('div','stat',`<span><b>${i+1}</b>/${items.length}</span><span>✅ <b>${good}</b></span>`));
+  }
+  show();
+}
+
+/* ---------- DICTADO CONCEPTUAL ---------- */
+function cfgDictado(){setTitle('Dictado conceptual');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);
+  c.insertAdjacentHTML('beforeend','<div class="sub" style="margin-top:10px">Segundos para estudiar la definición:</div>');const s=el('select');[10,20,30,45].forEach(n=>s.add(new Option(n,n)));s.value='20';c.appendChild(s);
+  c.appendChild(el('div',null,'<br>'));const go=el('button','btn','▶ Empezar');go.onclick=()=>{const pool=shuffle(byB(D.definiciones,bc._sel)).slice(0,10);runDictado(pool,+s.value);};c.appendChild(go);app.appendChild(c);}
+function runDictado(pool,secs){
+  if(!pool.length)return alert('Sin definiciones.');setTitle('Dictado conceptual');app.innerHTML='';let i=0;const c=el('div','card');app.appendChild(c);
+  function show(){const it=pool[i];c.innerHTML='';c.appendChild(el('div','between',`<span class="badge">${it.b} · T${it.t}</span><span><b>${i+1}</b>/${pool.length}</span>`));
+    c.appendChild(el('div','q',it.termino));
+    const def=el('div','just');def.textContent=it.definicion;c.appendChild(def);
+    let r=secs;const tm=el('div','timer');tm.textContent='Estudia: '+r+'s';c.appendChild(tm);
+    const iv=setInterval(()=>{r--;tm.textContent='Estudia: '+r+'s';if(r<=0){clearInterval(iv);hide();}},1000);
+    const skip=el('button','btn sec sm','Tapar ya');skip.onclick=()=>{clearInterval(iv);hide();};c.appendChild(skip);
+    function hide(){c.innerHTML='';c.appendChild(el('div','q','Reescribe con tus palabras: <b>'+it.termino+'</b>'));
+      const ta=el('textarea');c.appendChild(ta);const sb=el('button','btn','Mostrar definición');c.appendChild(sb);
+      sb.onclick=()=>{c.appendChild(el('div','just','<b>Definición:</b> '+it.definicion));const nx=el('button','btn sm','Siguiente →');nx.style.marginTop='8px';nx.onclick=()=>{i++;if(i>=pool.length)return showInfo('Completo','Buen trabajo. Repite con otras para fijar conceptos.');show();};c.appendChild(nx);};}
+  }
+  show();
+}
+
+/* ---------- EXPLICA UN TEMA (desarrollo) ---------- */
+function cfgDesarrollo(){setTitle('Explica un tema');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);
+  c.insertAdjacentHTML('beforeend','<div class="sub" style="margin-top:10px">Minutos para desarrollar:</div>');const s=el('select');[5,10,15,20].forEach(n=>s.add(new Option(n,n)));s.value='10';c.appendChild(s);
+  c.appendChild(el('div',null,'<br>'));const go=el('button','btn','▶ Empezar');go.onclick=()=>{const pool=shuffle(byB(D.temas,bc._sel));if(!pool.length)return alert('Sin temas.');runDesarrollo(pool[0],+s.value);};c.appendChild(go);app.appendChild(c);}
+function runDesarrollo(tema,mins){
+  setTitle('Explica un tema');app.innerHTML='';const c=el('div','card');app.appendChild(c);
+  c.appendChild(el('div','badge',tema.b));c.appendChild(el('div','q',tema.titulo));
+  c.appendChild(el('div','muted','Desarróllalo en voz alta o por escrito. Cuando acabes, revela el guión y marca lo que hayas cubierto.'));
+  let r=mins*60;const tm=el('div','timer');tm.style.fontSize='22px';tm.textContent=fmt(r);c.appendChild(tm);
+  const iv=setInterval(()=>{r--;tm.textContent=fmt(Math.max(0,r));if(r<=0){clearInterval(iv);tm.classList.add('warn');}},1000);
+  const ta=el('textarea');ta.placeholder='(opcional) Escribe tu esquema aquí…';c.appendChild(ta);
+  // grabar tu explicación en voz (opcional)
+  if(navigator.mediaDevices&&window.MediaRecorder){const recRow=el('div','row');recRow.style.margin='8px 0';
+    const rb=el('button','btn sec sm','🎙️ Grabar mi explicación');let mr=null,chunks=[];
+    rb.onclick=async()=>{if(mr&&mr.state==='recording'){mr.stop();return;}
+      try{const st=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(st);chunks=[];
+        mr.ondataavailable=e=>chunks.push(e.data);mr.onstop=()=>{st.getTracks().forEach(t=>t.stop());const url=URL.createObjectURL(new Blob(chunks,{type:'audio/webm'}));const au=document.createElement('audio');au.controls=true;au.src=url;au.style.display='block';au.style.marginTop='6px';recRow.appendChild(au);rb.textContent='🎙️ Grabar otra';};
+        mr.start();rb.textContent='⏹ Parar grabación';}catch(e){rb.textContent='🎙️ (sin micrófono)';}};
+    recRow.appendChild(rb);c.appendChild(recRow);}
+  const sb=el('button','btn','Ver guión y autoevaluar');c.appendChild(sb);
+  sb.onclick=()=>{clearInterval(iv);const g=el('div');g.innerHTML='<h2>Guión del tema (marca lo que cubriste)</h2>';
+    const ul=el('ul','chk');tema.epigrafes.forEach(e=>{const li=el('li',null,e);li.onclick=()=>li.classList.toggle('on');ul.appendChild(li);});g.appendChild(ul);
+    if(tema.claves&&tema.claves.length){g.insertAdjacentHTML('beforeend','<h2>Puntos clave que no debían faltar</h2>');const ulk=el('ul','chk');tema.claves.forEach(k=>{const li=el('li',null,k);li.onclick=()=>li.classList.toggle('on');ulk.appendChild(li);});g.appendChild(ulk);}
+    const nx=el('button','btn','Otro tema');nx.onclick=showHome;g.appendChild(nx);c.appendChild(g);sb.style.display='none';};
+}
+
+/* ---------- TTS (voz del navegador) ---------- */
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1;const v=(speechSynthesis.getVoices()||[]).find(x=>x.lang&&x.lang.toLowerCase().startsWith('es'));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
+
+/* ---------- CASOS PRÁCTICOS ---------- */
+const CASO_RE=/(una empresa|un sujeto|un contribuyente|una persona|un trabajador|una sociedad|un empresario|si un|si una|en el caso|se transmite|fallece|adquiere|un cliente|una entidad|un local|un inmueble|un socio|un administrador)/i;
+function startCasos(){const pool=shuffle(D.test.filter(q=>CASO_RE.test(q.q)));if(!pool.length)return alert('Sin casos.');runQuiz(pool.slice(0,20),{});}
+
+/* ---------- ORDENAR / RECONSTRUIR ---------- */
+function cfgOrden(){setTitle('Ordenar / reconstruir');app.innerHTML='';const c=el('div','card');const bc=blockChooser();c.appendChild(bc);
+  c.appendChild(el('div','muted','Reconstruye enumeraciones del temario (fases, requisitos, pasos) en el orden en que aparecen.'));
+  c.appendChild(el('div',null,'<br>'));const go=el('button','btn','▶ Empezar');go.onclick=()=>{const pool=shuffle(byB(D.procedimientos,bc._sel));if(!pool.length)return alert('Sin enumeraciones en esos bloques.');runOrden(pool.slice(0,12));};c.appendChild(go);app.appendChild(c);}
+function runOrden(pool){setTitle('Ordenar / reconstruir');app.innerHTML='';let i=0,good=0;const c=el('div','card');app.appendChild(c);
+  function show(){const it=pool[i];c.innerHTML='';const order=[];
+    c.appendChild(el('div','between',`<div class="stat"><span><b>${i+1}</b>/${pool.length}</span><span>✅ <b>${good}</b></span></div><span class="badge">${it.b} · T${it.t}</span>`));
+    if(it.intro)c.appendChild(el('div','q',it.intro));
+    c.appendChild(el('div','muted','Pulsa los pasos en el orden correcto:'));
+    const opts=el('div');const res=el('div','just');res.style.display='none';
+    shuffle(it.steps.map((s,ix)=>({s,ix}))).forEach(o=>{const b=el('button','opt',o.s);
+      b.onclick=()=>{if(b.disabled)return;b.disabled=true;b.style.opacity=.55;order.push(o.ix);b.textContent=order.length+'. '+o.s;
+        if(order.length===it.steps.length){const ok=order.every((v,k)=>v===k);if(ok)good++;recordStat(it.b,it.t,ok);
+          res.style.display='block';res.innerHTML=ok?'✅ ¡Orden correcto!':('❌ Orden correcto:<br>'+it.steps.map((s,k)=>(k+1)+'. '+s).join('<br>'));
+          const nx=el('button','btn sm','Siguiente →');nx.style.marginTop='8px';nx.onclick=()=>{i++;if(i>=pool.length)return showInfo('Completo',`${good} de ${pool.length}.`);show();};res.appendChild(el('div',null,'<br>'));res.appendChild(nx);}};
+      opts.appendChild(b);});
+    c.appendChild(opts);c.appendChild(res);
+  }
+  show();
+}
+
+/* ---------- MAPA MENTAL ---------- */
+function cfgMapa(){setTitle('Mapa mental');app.innerHTML='';const c=el('div','card');
+  c.appendChild(el('div','sub','Bloque:'));const bsel=el('select');BLOCKS.forEach(b=>bsel.add(new Option(b,b)));c.appendChild(bsel);
+  c.appendChild(el('div','sub','Tema:'));const tsel=el('select');tsel.style.maxWidth='100%';c.appendChild(tsel);
+  function fill(){tsel.innerHTML='';D.temas.forEach((t,ix)=>{if(t.b===bsel.value)tsel.add(new Option(t.titulo.slice(0,70),ix));});}
+  bsel.onchange=fill;fill();
+  c.appendChild(el('div',null,'<br>'));const go=el('button','btn','▶ Abrir mapa');go.onclick=()=>{if(tsel.value!=='')runMapa(D.temas[+tsel.value]);};c.appendChild(go);app.appendChild(c);}
+function runMapa(tema){setTitle('Mapa mental');app.innerHTML='';const c=el('div','card');app.appendChild(c);
+  c.appendChild(el('div','badge',tema.b));c.appendChild(el('div','q','🧠 '+tema.titulo));
+  c.appendChild(el('div','muted','Desbloquea cada epígrafe acertando una pregunta. Pulsa un nodo bloqueado.'));
+  const fcs=D.flashcards.filter(f=>f.b===tema.b&&String(f.t)===String(tema.t));
+  tema.epigrafes.forEach(ep=>{const node=el('div','opt');node.innerHTML='🔒 '+ep;
+    node.onclick=()=>{if(node.dataset.done)return;
+      if(!fcs.length){node.dataset.done=1;node.className='opt ok';node.innerHTML='✅ '+ep;return;}
+      const card=fcs[Math.floor(Math.random()*fcs.length)];
+      const m=el('div','just');m.innerHTML='<b>Para abrirlo:</b> '+card.q;
+      const sh=el('button','btn sm','Mostrar'),y=el('button','btn sm','✅ Acerté'),n=el('button','btn sec sm','❌ No');
+      y.style.display=n.style.display='none';sh.style.marginRight='6px';y.style.margin='0 6px';
+      const rev=el('div');rev.style.display='none';rev.style.marginTop='6px';rev.textContent=card.a;
+      sh.onclick=()=>{rev.style.display='block';sh.style.display='none';y.style.display=n.style.display='inline-block';};
+      y.onclick=()=>{recordStat(tema.b,tema.t,true);node.dataset.done=1;node.className='opt ok';node.innerHTML='✅ '+ep;m.remove();};
+      n.onclick=()=>{recordStat(tema.b,tema.t,false);m.remove();};
+      m.appendChild(el('div',null,'<br>'));m.appendChild(sh);m.appendChild(y);m.appendChild(n);m.appendChild(rev);node.after(m);};
+    c.appendChild(node);});
+}
+
+/* ---------- REPASO DEL DÍA ---------- */
+function repasoDia(){const bt=banco().filter(x=>x.kind==='test').map(x=>({b:x.b,t:x.t,q:x.q,op:x.op,ok:x.ok,just:x.just}));
+  const fill=shuffle(D.test).slice(0,Math.max(0,20-bt.length));const pool=shuffle(bt.concat(fill)).slice(0,20);
+  if(!pool.length)return alert('Sin preguntas.');touchStreak();runQuiz(pool,{});}
+
+/* ---------- flashcards de una lista (para temas) ---------- */
+function runFlash(list){if(!list.length)return alert('Sin tarjetas.');setTitle('Flashcards');app.innerHTML='';list=shuffle(list);let i=0,good=0;const c=el('div','card');app.appendChild(c);
+  function show(){const card=list[i];c.innerHTML='';c.appendChild(el('div','between',`<span><b>${i+1}</b>/${list.length}</span><span class="badge">${card.b} · T${card.t}</span>`));
+    c.appendChild(el('div','q',card.q));const rev=el('div','just');rev.style.display='none';rev.textContent=card.a;c.appendChild(rev);
+    const sb=el('button','btn','Mostrar respuesta');const rate=el('div','row');rate.style.display='none';const y=el('button','btn','✅ La sabía'),n=el('button','btn sec','❌ Fallé');rate.appendChild(y);rate.appendChild(n);
+    sb.onclick=()=>{rev.style.display='block';sb.style.display='none';rate.style.display='flex';};
+    const nxt=ok=>{recordStat(card.b,card.t,ok);if(ok)good++;else addErr({kind:'fc',b:card.b,q:card.q,a:card.a,t:card.t});i++;if(i>=list.length)return showInfo('Completo',`${good} de ${list.length}.`);show();};
+    y.onclick=()=>nxt(true);n.onclick=()=>nxt(false);c.appendChild(sb);c.appendChild(rate);}
+  show();}
+
+/* ---------- MOODLE: lector del temario ---------- */
+function showTemario(){setTitle('📚 Temari');app.innerHTML='';const C=window.CONTENIDO||[];
+  if(!C.length){app.appendChild(el('div','card','<div class="muted">No se ha cargado contenido.js.</div>'));return;}
+  const g=el('div','grid');BLOCKS.forEach(b=>{const n=C.filter(t=>t.b===b).length;if(!n)return;g.appendChild(tile(b,n+' temas','leer y practicar',()=>listTemas(b)));});app.appendChild(g);}
+function listTemas(b){setTitle('📚 '+b);app.innerHTML='';const g=el('div','grid');
+  (window.CONTENIDO||[]).filter(t=>t.b===b).forEach(t=>g.appendChild(tile('Tema '+t.t,t.titulo,'',()=>readTema(t))));app.appendChild(g);}
+function readTema(t){setTitle('Tema '+t.t);app.innerHTML='';
+  const c=el('div','card');c.innerHTML=`<div class="badge">${t.b} · Tema ${t.t}</div><h3 style="color:var(--azul);margin:6px 0">${t.titulo}</h3><div class="row" style="margin-bottom:8px"><button class="btn sec sm" id="leer">🔊 Leer</button></div><div class="lectura">${t.html}</div>`;app.appendChild(c);
+  c.querySelector('#leer').onclick=()=>speak(c.querySelector('.lectura').textContent.slice(0,4500));
+  const pr=el('div','card');pr.innerHTML='<b>Practica este tema</b><br>';
+  const mk=(l,fn)=>{const x=el('button','btn sm',l);x.style.margin='6px 6px 0 0';x.onclick=fn;pr.appendChild(x);};
+  mk('📝 Test',()=>{const p=D.test.filter(q=>q.b===t.b&&String(q.t)===String(t.t));p.length?runQuiz(shuffle(p),{}):alert('Sin test de este tema.');});
+  mk('🧠 Cloze',()=>{const p=D.cloze.filter(q=>q.b===t.b&&String(q.t)===String(t.t));p.length?runCloze(shuffle(p),0):alert('Sin cloze de este tema.');});
+  mk('🃏 Flashcards',()=>{const p=D.flashcards.filter(f=>f.b===t.b&&String(f.t)===String(t.t));runFlash(p);});
+  app.appendChild(pr);}
+
+/* ====================== COMPETICIÓN ONLINE (Firebase) ====================== */
+function onlineReady(){return !!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey);}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('No se pudo cargar Firebase (¿sin internet?)'));document.head.appendChild(s);});}
+let _fbP=null;
+function ensureFB(){if(_fbP)return _fbP;_fbP=(async()=>{if(!window.firebase){await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js');}firebase.initializeApp(window.FIREBASE_CONFIG);return firebase.firestore();})();return _fbP;}
+function getNombre(){let n=LS.get('nombre','');if(!n){n=(prompt('Tu nombre para la clasificación (lo verá la Judith):')||'Anónimo').slice(0,24);LS.set('nombre',n);}return n;}
+function hoyStr(){return new Date().toISOString().slice(0,10);}
+function semanaStr(){const d=new Date(),o=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=o.getUTCDay()||7;o.setUTCDate(o.getUTCDate()+4-day);const ys=new Date(Date.UTC(o.getUTCFullYear(),0,1));const wk=Math.ceil(((o-ys)/86400000+1)/7);return o.getUTCFullYear()+'-W'+String(wk).padStart(2,'0');}
+function postScore(modo,score){if(!onlineReady())return '<div class="muted" style="margin-top:8px">🔒 Configura Firebase (firebase-config.js) para subir a la clasificación.</div>';
+  ensureFB().then(db=>db.collection('scores').add({nombre:getNombre(),modo,score,dia:hoyStr(),semana:semanaStr(),ts:Date.now()})).catch(()=>{});
+  return '<div class="muted" style="margin-top:8px">✅ Enviando a la clasificación como <b>'+getNombre()+'</b>…</div>';}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function seededPick(arr,rng,n){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a.slice(0,n);}
+function retoDiario(){const seed=+hoyStr().replace(/-/g,'');const pool=seededPick(D.test,mulberry32(seed),20);setTitle('🔥 Reto diario');
+  runQuiz(pool,{penaliza:true,onEnd:(nota)=>{touchStreak();return '<div class="just">Reto de HOY (mismas preguntas para todos).'+postScore('RetoDiario',Math.max(0,Math.round((nota||0)*10)))+'<br><span class="muted">La Judith tiene el mismo reto hoy. ¡A ver quién puntúa más!</span></div>';}});}
+function showLeaderboard(){setTitle('🏆 Clasificación');app.innerHTML='';
+  if(!onlineReady()){app.appendChild(el('div','card','<div class="muted">🔒 Falta configurar Firebase. Abre <b>firebase-config.js</b> y pega tu configuración (ver GUIA_ONLINE.md). Mientras, podéis competir comparando capturas del resultado. 😄</div>'));return;}
+  const c=el('div','card');const ctl=el('div','chips');['Hoy','Semana','Total'].forEach((p,ix)=>{const b=el('span','chip'+(ix===2?' on':''),p);b.onclick=()=>{[...ctl.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');load(p);};ctl.appendChild(b);});c.appendChild(ctl);const list=el('div');c.appendChild(list);app.appendChild(c);
+  const nm=el('button','btn sec sm','Cambiar mi nombre ('+(LS.get('nombre','sin nombre'))+')');nm.onclick=()=>{LS.set('nombre','');getNombre();showLeaderboard();};app.appendChild(nm);
+  function load(period){list.innerHTML='<div class="muted">Cargando…</div>';
+    ensureFB().then(db=>db.collection('scores').orderBy('score','desc').limit(400).get()).then(s=>{let rows=[];s.forEach(d=>rows.push(d.data()));
+      if(period==='Hoy')rows=rows.filter(r=>r.dia===hoyStr());else if(period==='Semana')rows=rows.filter(r=>r.semana===semanaStr());
+      const best={};rows.forEach(r=>{if(!best[r.nombre]||r.score>best[r.nombre].score)best[r.nombre]=r;});
+      const arr=Object.values(best).sort((a,b)=>b.score-a.score).slice(0,50);
+      list.innerHTML=arr.length?('<table style="width:100%;font-size:14px;margin-top:8px"><tr><th>#</th><th align=left>Nombre</th><th>Pts</th><th align=left>Modo</th></tr>'+arr.map((r,i)=>`<tr><td align=center>${['🥇','🥈','🥉'][i]||(i+1)}</td><td>${r.nombre}</td><td align=center><b>${r.score}</b></td><td style="font-size:12px">${r.modo||''}</td></tr>`).join('')+'</table>'):'<div class="muted">Sin puntuaciones en este periodo. ¡Sé el primero!</div>';
+    }).catch(e=>list.innerHTML='<div class="muted">Error: '+e.message+'. (¿Reglas de Firestore en modo test?)</div>');}
+  load('Total');}
+
+/* ====================== MÁS JUEGOS ====================== */
+function startSurvival(){const pool=shuffle(D.test);setTitle('💀 Supervivencia');app.innerHTML='';let i=0,vidas=3,score=0;const c=el('div','card');app.appendChild(c);
+  function show(){const q=pool[i%pool.length];c.innerHTML='';c.appendChild(el('div','between',`<span class="badge">${q.b} · T${q.t}</span><span>${'❤️'.repeat(vidas)||'—'} · ⭐ ${score}</span>`));c.appendChild(el('div','q',q.q));
+    q.op.forEach((o,k)=>{const b=el('button','opt',`<span class="k">${'ABCD'[k]}</span>${o}`);b.onclick=()=>{[...c.querySelectorAll('.opt')].forEach((x,j)=>{x.disabled=true;if(j===q.ok)x.classList.add('ok');});
+      if(k===q.ok){score++;recordStat(q.b,q.t,true);setTimeout(()=>{i++;show();},450);}
+      else{b.classList.add('ko');vidas--;recordStat(q.b,q.t,false);addErr({kind:'test',b:q.b,q:q.q,op:q.op,ok:q.ok,just:q.just,t:q.t});
+        if(q.just)c.appendChild(el('div','just',q.just));
+        if(vidas<=0){setTimeout(()=>{setTitle('💀 Fin');app.innerHTML='';const r=el('div','card center');r.innerHTML='<div class="big">⭐ '+score+'</div><div class="muted">aciertos seguidos antes de caer</div>'+postScore('Supervivencia',score);const a=el('button','btn','↻ Otra vez');a.onclick=startSurvival;r.appendChild(el('div',null,'<br>'));r.appendChild(a);app.appendChild(r);},900);}
+        else setTimeout(()=>{i++;show();},1100);}};c.appendChild(b);});}
+  show();}
+function startMatch(){const pool=shuffle(D.flashcards.filter(f=>f.a.length<=44&&f.q.length<=80)).slice(0,6);if(pool.length<4)return alert('Pocas tarjetas.');
+  setTitle('🔗 Emparejar');app.innerHTML='';let matched=0,selL=null;const c=el('div','card');app.appendChild(c);c.appendChild(el('div','muted','Pulsa un enunciado y luego su respuesta.'));
+  const grid=el('div','col2');const colL=el('div'),colR=el('div');
+  shuffle(pool).forEach(p=>{const b=el('button','opt',p.q);b.dataset.id=p.q;b.onclick=()=>{if(b.disabled)return;colL.querySelectorAll('.selL').forEach(x=>x.classList.remove('selL'));b.classList.add('selL');selL=b;};colL.appendChild(b);});
+  shuffle(pool).forEach(p=>{const b=el('button','opt',p.a);b.dataset.id=p.q;b.onclick=()=>{if(b.disabled||!selL)return;if(b.dataset.id===selL.dataset.id){b.disabled=selL.disabled=true;b.classList.add('ok');selL.classList.add('ok');selL.classList.remove('selL');selL=null;matched++;if(matched===pool.length)showInfo('🔗 ¡Emparejado!','Has unido las '+pool.length+' parejas.');}else{b.classList.add('ko');setTimeout(()=>b.classList.remove('ko'),450);}};colR.appendChild(b);});
+  grid.appendChild(colL);grid.appendChild(colR);c.appendChild(grid);}
+function startVF(){const fc=shuffle(D.flashcards.filter(f=>f.a.length<=90&&f.a.length>=6));if(fc.length<12)return alert('Pocas tarjetas.');
+  setTitle('⚖ Verdadero / Falso');app.innerHTML='';const n=20,items=[];for(let k=0;k<n;k++){const base=fc[k];const tru=Math.random()<0.5;items.push({b:base.b,t:base.t,q:base.q,a:tru?base.a:fc[(k+5)%fc.length].a,tru});}
+  let i=0,good=0;const c=el('div','card');app.appendChild(c);
+  function show(){const it=items[i];c.innerHTML='';c.appendChild(el('div','between',`<span class="badge">${it.b} · T${it.t}</span><span><b>${i+1}</b>/${n} · ✅ ${good}</span>`));
+    c.appendChild(el('div','q',it.q));c.appendChild(el('div','just','Respuesta propuesta: '+it.a));
+    const row=el('div','row');const v=el('button','btn','✔ Verdadero'),f=el('button','btn sec','✘ Falso');row.appendChild(v);row.appendChild(f);c.appendChild(row);const fb=el('div');c.appendChild(fb);
+    function ans(g){const ok=(g===it.tru);if(ok)good++;recordStat(it.b,it.t,ok);v.disabled=f.disabled=true;fb.innerHTML='<div class="just">'+(ok?'✅ Correcto':'❌ Era '+(it.tru?'VERDADERO':'FALSO'))+'</div>';const nx=el('button','btn sm','Siguiente →');nx.style.marginTop='6px';nx.onclick=()=>{i++;if(i>=n)return showInfo('V/F completo',good+' de '+n+'.'+postScore('VerdaderoFalso',good*5));show();};fb.appendChild(nx);}
+    v.onclick=()=>ans(true);f.onclick=()=>ans(false);}
+  show();}
+function startTabla(){const pool=shuffle(D.comparacion);if(!pool.length)return alert('Sin cuadros.');runTabla(pool[0]);}
+function runTabla(cu){setTitle('📊 Tabla completa');app.innerHTML='';const c=el('div','card');app.appendChild(c);c.appendChild(el('div','badge',cu.b));c.appendChild(el('div','q',cu.titulo+' — clasifica cada rasgo en '+cu.A+' o '+cu.B));
+  const items=shuffle(cu.items),picks={};
+  items.forEach((it,ix)=>{const row=el('div');row.style.margin='8px 0';row.innerHTML='<div style="font-size:14px;margin-bottom:3px">'+(it.attr?('<b>'+it.attr+'</b>: '):'')+it.texto+'</div>';
+    const A=el('button','btn sec sm',cu.A),B=el('button','btn sec sm',cu.B);A.style.marginRight='6px';
+    A.onclick=()=>{picks[ix]='A';A.style.background='#dbe7f3';B.style.background='';};B.onclick=()=>{picks[ix]='B';B.style.background='#dbe7f3';A.style.background='';};
+    row.appendChild(A);row.appendChild(B);c.appendChild(row);});
+  const chk=el('button','btn','Comprobar');chk.style.marginTop='10px';c.appendChild(chk);
+  chk.onclick=()=>{let g=0;items.forEach((it,ix)=>{if(picks[ix]===it.lado)g++;});const ok=g===items.length;recordStat(cu.b,'',ok);showInfo('📊 Tabla',g+' de '+items.length+' correctos en «'+cu.titulo+'».'+postScore('TablaComparativa',g*5));};}
+function cfgBoss(){setTitle('⚔ Boss del bloque');app.innerHTML='';const c=el('div','card');c.appendChild(el('div','muted','Examen difícil cronometrado. Necesitas 8/10 para la medalla del bloque.'));c.appendChild(el('div','sub','Bloque a batir:'));const s=el('select');BLOCKS.forEach(b=>s.add(new Option(b,b)));c.appendChild(s);c.appendChild(el('div',null,'<br>'));
+  const go=el('button','btn','⚔ Combatir');go.onclick=()=>{const pool=shuffle(byB(D.test,new Set([s.value]))).slice(0,15);if(pool.length<5)return alert('Pocas preguntas en este bloque.');
+    runQuiz(pool,{penaliza:true,timeLimit:8*60,onEnd:(nota)=>{if(nota>=8){const m=LS.get('medals',{});m[s.value]=true;LS.set('medals',m);return '<div class="just">🏅 ¡Boss de '+s.value+' derrotado! Medalla conseguida.'+postScore('Boss-'+s.value,Math.round(nota*10))+'</div>';}return '<div class="just">Necesitas 8/10 para la medalla. ¡Vuelve más fuerte! ⚔</div>';}});};c.appendChild(go);app.appendChild(c);}
+
+/* ---------- BANCO / STATS / INFO ---------- */
+function showBanco(){setTitle('Banco de errores');app.innerHTML='';const b=banco();
+  const c=el('div','card');
+  if(!b.length){c.innerHTML='<div class="muted">Aún no has fallado nada (o lo has vaciado). Juega y aquí se acumularán tus errores para repasarlos.</div>';app.appendChild(c);return;}
+  c.innerHTML=`<div class="between"><b>${b.length} ítems para repasar</b><button class="btn sm" id="rep">▶ Repasar test fallados</button></div>`;
+  const tests=b.filter(x=>x.kind==='test');
+  $('#rep')?.addEventListener?.('click',()=>{});
+  app.appendChild(c);
+  c.querySelector('#rep').onclick=()=>{if(!tests.length)return alert('No hay preguntas de test en el banco (sí flashcards/cloze: repásalas en su modo).');runQuiz(shuffle(tests).map(x=>({b:x.b,t:x.t,q:x.q,op:x.op,ok:x.ok,just:x.just})),{onBanco:true});};
+  const list=el('div','card');b.slice(0,200).forEach(x=>{const row=el('div','between');row.style.borderBottom='1px solid #eef2f6';row.style.padding='6px 0';
+    row.innerHTML=`<span style="font-size:13px"><span class="badge">${x.b}</span> ${(x.q||x.contenido||'').slice(0,70)}</span>`;
+    const d=el('a','lnk','quitar');d.onclick=()=>{delErr(x.key);showBanco();};row.appendChild(d);list.appendChild(row);});
+  app.appendChild(list);
+  const clr=el('button','btn sec','Vaciar banco');clr.onclick=()=>{if(confirm('¿Vaciar todo el banco de errores?')){LS.set('banco',[]);showBanco();}};app.appendChild(clr);
+}
+function showStats(){setTitle('Estadísticas');app.innerHTML='';
+  const srs=LS.get('srs',{}),stats=LS.get('stats',{}),st=LS.get('streak',{last:'',count:0});
+  let tot=0,acc=0;Object.values(stats).forEach(s=>{tot+=s.n;acc+=s.g;});
+  // racha
+  const r1=el('div','card');r1.innerHTML=`<div class="row" style="justify-content:space-around;text-align:center">
+    <div><div class="big">${st.count||0}</div><div class="muted">racha (días)</div></div>
+    <div><div class="big">${tot}</div><div class="muted">respondidas</div></div>
+    <div><div class="big">${tot?Math.round(acc/tot*100):0}%</div><div class="muted">acierto global</div></div></div>`;
+  app.appendChild(r1);
+  // logros
+  const logros=[
+    ['Primeros pasos',tot>=1],['100 preguntas',tot>=100],['500 preguntas',tot>=500],
+    ['Racha 3 días',st.count>=3],['Racha 7 días',st.count>=7],
+    ['100 tarjetas SRS',Object.keys(srs).length>=100],['Caja 5 alcanzada',Object.values(srs).some(s=>s.box>=5)],
+    ['80% global',tot>=50&&acc/tot>=0.8],['Banco a cero',tot>=50&&banco().length===0]];
+  const lg=el('div','card');lg.innerHTML='<b>🏅 Logros</b><div class="chips" style="margin-top:8px">'+
+    logros.map(([n,ok])=>`<span class="chip${ok?' on':''}" style="cursor:default">${ok?'✅':'🔒'} ${n}</span>`).join('')+'</div>';
+  app.appendChild(lg);
+  // puntos débiles por tema
+  const weak=Object.entries(stats).filter(([k,s])=>s.n>=3&&s.g/s.n<0.6).sort((a,b)=>a[1].g/a[1].n-b[1].g/b[1].n).slice(0,12);
+  const wk=el('div','card');wk.innerHTML='<b>⚠ Puntos débiles (a repasar)</b>';
+  if(!weak.length)wk.insertAdjacentHTML('beforeend','<div class="muted">Aún sin datos suficientes. Juega más para detectar tus temas flojos.</div>');
+  else{wk.insertAdjacentHTML('beforeend','<table style="width:100%;margin-top:8px;font-size:14px"><tr><th align=left>Bloque · Tema</th><th>Acierto</th></tr>'+
+    weak.map(([k,s])=>{const[b,t]=k.split('|');return `<tr><td>${b} · T${t}</td><td align=center>${Math.round(s.g/s.n*100)}% (${s.g}/${s.n})</td></tr>`;}).join('')+'</table>');}
+  app.appendChild(wk);
+  const r=el('button','btn sec','Reiniciar todo el progreso');r.onclick=()=>{if(confirm('¿Borrar SRS, banco, estadísticas y racha?')){['srs','banco','stats','streak'].forEach(k=>localStorage.removeItem('thac_'+k));showStats();}};app.appendChild(r);
+}
+function showInfo(t,msg){setTitle(t);app.innerHTML='';const c=el('div','card center');c.innerHTML=`<div class="big">✓</div><div style="margin:8px 0 14px">${msg}</div>`;const b=el('button','btn','← Menú');b.onclick=showHome;c.appendChild(b);app.appendChild(c);}
+
+showHome();
+if(location.protocol.startsWith('http')&&'serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
