@@ -113,7 +113,6 @@ function showHome(){
   g.appendChild(tile('Cloze de cifras y plazos','Rellena números, plazos y porcentajes de memoria',D.cloze.filter(c=>c.kind==='cifras').length+' frases',()=>cfgCloze('cifras')));
   g.appendChild(tile('Cloze legal','Rellena artículos, leyes y datos clave',D.cloze.filter(c=>c.kind==='legal').length+' frases',()=>cfgCloze('legal')));
   g.appendChild(tile('Flashcards SRS','Repetición espaciada (Leitner) según tus errores',D.flashcards.length+' tarjetas',()=>cfgSRS()));
-  g.appendChild(tile('¿Qué artículo/ley es?','Te dan el contenido, identificas la norma',D.articulo.length+' ítems',()=>cfgArticulo()));
   g.appendChild(tile('Mapa mental','Desbloquea los epígrafes de un tema acertando preguntas',D.temas.length+' temas',()=>cfgMapa()));
   g=section('🔍 Comprensión y aplicación');
   g.appendChild(tile('Detección de errores','Encuentra los datos alterados contra reloj',D.errores.length+' párrafos',()=>cfgErrores()));
