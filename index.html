@@ -95,6 +95,7 @@ function showHome(){
   g.appendChild(tile('🔥 Repaso del día','Sesión mixta: tus errores + preguntas nuevas. Hazla cada día para mantener la racha',null,()=>repasoDia()));
   g.appendChild(tile('📚 Temari (estudiar)','Lee cada tema en texto completo y practica al terminar',(window.CONTENIDO||[]).length+' temas',()=>showTemario()));
   g=section('🏆 Competición con Judith');
+  g.appendChild(tile('⚔ Duelo 1v1','Reto en directo: mismas preguntas, gana quien más acierte',null,()=>cfgDuel()));
   g.appendChild(tile('🔥 Reto diario','Mismas preguntas para los dos hoy; sube tu nota y compite',null,()=>retoDiario()));
   g.appendChild(tile('🏆 Clasificación','Ranking de hoy / semana / total'+(onlineReady()?'':' (configura Firebase)'),null,()=>showLeaderboard()));
   g=section('📝 Examen 1 · Test (Civil, Mercantil, Economía, Administrativo)');
@@ -495,6 +496,37 @@ function showLeaderboard(){setTitle('🏆 Clasificación');app.innerHTML='';
       list.innerHTML=arr.length?('<table style="width:100%;font-size:14px;margin-top:8px"><tr><th>#</th><th align=left>Nombre</th><th>Pts</th><th align=left>Modo</th></tr>'+arr.map((r,i)=>`<tr><td align=center>${['🥇','🥈','🥉'][i]||(i+1)}</td><td>${r.nombre}</td><td align=center><b>${r.score}</b></td><td style="font-size:12px">${r.modo||''}</td></tr>`).join('')+'</table>'):'<div class="muted">Sin puntuaciones en este periodo. ¡Sé el primero!</div>';
     }).catch(e=>list.innerHTML='<div class="muted">Error: '+e.message+'. (¿Reglas de Firestore en modo test?)</div>');}
   load('Total');}
+
+/* ---------- DUELO 1v1 en tiempo real ---------- */
+function rndCode(){const L='ABCDEFGHJKLMNPQRSTUVWXYZ';let s='';for(let i=0;i<4;i++)s+=L[Math.floor(Math.random()*L.length)];return s;}
+function cfgDuel(){setTitle('⚔ Duelo 1v1');app.innerHTML='';
+  if(!onlineReady()){app.appendChild(el('div','card','<div class="muted">🔒 El duelo necesita Firebase configurado (firebase-config.js).</div>'));return;}
+  const c=el('div','card');c.appendChild(el('div','muted','Reta a Judith en directo: las MISMAS 10 preguntas para los dos, a ver quién acierta más.'));
+  const b1=el('button','btn','➕ Crear duelo');b1.onclick=crearDuelo;const b2=el('button','btn sec','🔑 Unirme con código');b2.style.marginLeft='8px';
+  b2.onclick=()=>{const code=(prompt('Código del duelo (4 letras):')||'').toUpperCase().replace(/[^A-Z]/g,'').trim();if(code.length===4)unirseDuelo(code);else if(code)alert('El código son 4 letras.');};
+  c.appendChild(el('div',null,'<br>'));c.appendChild(b1);c.appendChild(b2);app.appendChild(c);}
+async function crearDuelo(){const nombre=getNombre();const qs=shuffle(D.test).slice(0,10).map(q=>({q:q.q,op:q.op,ok:q.ok,b:q.b,t:q.t}));const code=rndCode();
+  setTitle('⚔ Duelo '+code);app.innerHTML='';const c=el('div','card center');c.innerHTML='<div class="muted">Comparte este código con tu rival:</div><div class="big" style="letter-spacing:4px">'+code+'</div><div class="muted">Esperando a que se una…</div>';app.appendChild(c);
+  try{const db=await ensureFB();const ref=db.collection('duels').doc(code);await ref.set({qs,a:{nombre,score:0,i:0,done:false},b:null,status:'esperando',ts:Date.now()});
+    const unsub=ref.onSnapshot(s=>{const d=s.data();if(d&&d.b){unsub();runDuel(qs,code,true);}});}
+  catch(e){showInfo('Error','No se pudo crear el duelo: '+e.message);}}
+async function unirseDuelo(code){const nombre=getNombre();try{const db=await ensureFB();const ref=db.collection('duels').doc(code);const s=await ref.get();
+  if(!s.exists)return alert('No existe ese duelo (revisa el código).');const d=s.data();if(d.b)return alert('Ese duelo ya está completo.');
+  await ref.update({b:{nombre,score:0,i:0,done:false},status:'jugando'});runDuel(d.qs,code,false);}catch(e){alert('Error: '+e.message);}}
+function runDuel(qs,code,soyA){setTitle('⚔ Duelo '+code);app.innerHTML='';let i=0,score=0,answered=false,ended=false;const me=soyA?'a':'b',other=soyA?'b':'a';const c=el('div','card');app.appendChild(c);
+  ensureFB().then(db=>{const ref=db.collection('duels').doc(code);const oppBox=el('div','badge');oppBox.style.background='#fdeccb';oppBox.textContent='Esperando al rival…';
+    const unsub=ref.onSnapshot(s=>{const d=s.data();if(!d)return;const o=d[other];if(o)oppBox.textContent='Rival '+o.nombre+': '+o.score+' aciertos ('+o.i+'/'+qs.length+')';
+      if(d.a&&d.b&&d.a.done&&d.b.done&&!ended){ended=true;unsub();fin(d);}});
+    function show(){answered=false;const q=qs[i];c.innerHTML='';c.appendChild(el('div','between',`<span>Tú: <b>${score}</b> · ${i+1}/${qs.length}</span>`));c.appendChild(oppBox);
+      c.appendChild(el('div','badge',q.b+' · T'+q.t));c.appendChild(el('div','q',q.q));
+      q.op.forEach((o,k)=>{const b=el('button','opt',`<span class="k">${'ABCD'[k]}</span>${o}`);b.onclick=()=>{if(answered)return;answered=true;[...c.querySelectorAll('.opt')].forEach((x,j)=>{x.disabled=true;if(j===q.ok)x.classList.add('ok');});if(k===q.ok)score++;else b.classList.add('ko');recordStat(q.b,q.t,k===q.ok);
+        const upd={};upd[me]={nombre:getNombre(),score,i:i+1,done:i+1>=qs.length};ref.update(upd).catch(()=>{});
+        setTimeout(()=>{i++;if(i>=qs.length){c.innerHTML='';c.appendChild(oppBox);c.appendChild(el('div','q','Has terminado con '+score+' aciertos.'));c.appendChild(el('div','muted','Esperando a que tu rival acabe…'));}else show();},650);};c.appendChild(b);});}
+    function fin(d){setTitle('⚔ Resultado');app.innerHTML='';const r=el('div','card center');const ms=d[me].score,os=d[other].score;const win=ms>os?'🏆 ¡Ganas tú!':(ms<os?'😤 Gana tu rival':'🤝 ¡Empate!');
+      r.innerHTML='<div class="big">'+ms+' – '+os+'</div><div style="margin:6px 0;font-size:18px">'+win+'</div><div class="muted">'+d.a.nombre+': '+d.a.score+' · '+d.b.nombre+': '+d.b.score+'</div>';
+      const again=el('button','btn','↻ Otro duelo');again.onclick=cfgDuel;r.appendChild(el('div',null,'<br>'));r.appendChild(again);app.appendChild(r);postScore('Duelo',ms);}
+    show();
+  }).catch(e=>showInfo('Error','Duelo: '+e.message));}
 
 /* ====================== MÁS JUEGOS ====================== */
 function startSurvival(){const pool=shuffle(D.test);setTitle('💀 Supervivencia');app.innerHTML='';let i=0,vidas=3,score=0;const c=el('div','card');app.appendChild(c);

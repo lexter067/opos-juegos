@@ -33,10 +33,14 @@ service cloud.firestore {
       allow create: if true;
       allow update, delete: if false;
     }
+    match /duels/{doc} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
   }
 }
 ```
-Esto permite ver el ranking y enviar puntuaciones (pero no borrar/editar las de otros). Sin contraseñas.
+Permite ver el ranking y enviar puntuaciones (sin borrar/editar las de otros) y jugar duelos en directo. Sin contraseñas.
 
 > Cuando `firebase-config.js` tenga tu config, en la web aparecerán activos **Reto diario** y **Clasificación**.
 
